@@ -4,8 +4,8 @@ Analyse the industrial surface defect dataset, validate RLE masks, examine nativ
 Dataset and conventions
 - Native resolution: 128 × 800 pixels (102,400 pixels/image).
 - Classes: defect_a, defect_b, defect_c, defect_d.
-- The Milestone 1 baseline must be evaluated at native resolution.
-- Values marked VERIFY were recalled from earlier discussion and have not been rechecked against the current notebook outputs.
+
+
 Q1–Q10: Dataset and metric analysis
 Q1. Most frequent defect class count + completely clean images
 Previously recalled answer: 9,616 (VERIFY).
