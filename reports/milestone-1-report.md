@@ -145,4 +145,4 @@ The baseline evaluation uses the native image resolution of 128 × 800 pixels. T
 
 The threshold sweep compares segmentation performance at different confidence levels. Lower thresholds generally produce more positive predictions, while higher thresholds produce fewer positive predictions.
 
-The training metrics and measured threshold-sweep scores are not included in the available notebook outputs.
+
