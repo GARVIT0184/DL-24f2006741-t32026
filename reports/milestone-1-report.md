@@ -1,57 +1,148 @@
-Milestone 1 Report — Industrial Surface Defect Detection
-Project objective
-Analyse the industrial surface defect dataset, validate RLE masks, examine native-resolution geometry and defect statistics, prepare an image-level stratified split, and evaluate the starter segmentation baseline.
-Dataset and conventions
-- Native resolution: 128 × 800 pixels (102,400 pixels/image).
-- Classes: defect_a, defect_b, defect_c, defect_d.
+# Milestone 1 Report
+## Industrial Surface Defect Detection
 
+### 1. Dataset Overview
 
-Q1–Q10: Dataset and metric analysis
-Q1. Most frequent defect class count + completely clean images
-Previously recalled answer: 9,616 (VERIFY).
-Method: count positive image/class occurrences for each class, count completely clean images, then add the most frequent class count to the clean-image count.
-Q2. Images containing more than one defect class
-Previously recalled answer: 1,198 images (VERIFY).
-Method: group by image_id, count distinct classes with non-empty masks, and count images with more than one class.
-Q3. Overlapping defect pixels
-Previously recalled answer: 0 pixels (VERIFY).
-Method: decode each class-specific RLE onto the native 128 × 800 canvas and sum intersections between class masks. Verify the RLE indexing convention and this result using the current notebook before submission.
-Q4. RLE boundary audit
-- Malformed non-empty RLE rows with a run end beyond 102,400: 0 (VERIFY).
-- Maximum pixel index observed: 102,400 (VERIFY).
-Method: parse each non-empty RLE into start/length pairs and check the run end against the 102,400-pixel canvas using the dataset's indexing convention.
-Q5. Distortion caused by resizing to 256 × 256
-- Width scale factor: 256 / 800 = 0.32.
-- Height scale factor: 256 / 128 = 2.00.
-- Distortion ratio: 2.00 / 0.32 = 6.25.
-Interpretation: square resizing compresses the horizontal dimension and stretches the vertical dimension, distorting defect shapes. Preserve aspect ratio or use suitable padding/cropping.
-Q6. Cohen's d: defect versus local background
- defect_d had the smallest absolute effect size, |d| = 0.020579 (VERIFY).
-Interpretation: this effect is close to zero, so local intensity contrast may be weak for this class. Texture- or frequency-based features may help. 
-Q7. Dice for empty ground truth
-- Empty ground truth and empty prediction: Dice = 1.0 under the specified convention.
-- Empty ground truth with 2 false-positive predicted pixels: Dice = 0.0.
-Q8. Toy composite metric
-For 10 positive pairs (6 with Dice 0.80, 4 with Dice 0.40), and 40 empty pairs (36 predicted empty; 4 with 1,024 false-positive pixels each on a 102,400-pixel canvas):
-- Foreground Dice: (6 × 0.80 + 4 × 0.40) / 10 = 0.6400
-- Mean false-positive fraction over empty pairs: (4 × 1,024 / 102,400) / 40 = 0.0010
-- False-positive score: 1 − 0.0010 = 0.9990
-- Empty accuracy: 36 / 40 = 0.9000
-- Weighted score: 0.70 × 0.6400 + 0.20 × 0.9990 + 0.10 × 0.9000 = 0.7378
-Final toy score: 0.7378.
-Q9. Empty-mask prevalence and all-empty predictor
-Dataset-specific value: NOT YET VERIFIED.
-Count empty image/class pairs and divide by the total number of image/class pairs to obtain the emptiness rate. Under the question's convention, this is the naive empty-aware mean Dice of an all-empty predictor.
-Official weighted score for an all-empty predictor:
-0.70 × 0 + 0.20 × 1 + 0.10 × 1 = 0.3000.
-Q10. Connected-component analysis and area filtering
-Dataset-specific values: NOT YET VERIFIED.
-Use 8-connectivity on each class-specific ground-truth mask. Report the smallest component for defect_b and calculate the percentage of ground-truth defect pixels removed by the specified area filters. Use measured notebook outputs, not estimates.
-Q11. Image-level combination stratification
-- Number of unique image-level defect-combination strings: NOT YET VERIFIED.
-- defect_b-positive images in the full dataset: 313 (from the assessment instructions).
-- 20% holdout target: 313 × 0.20 = 62.6, rounded to 63 images.
-Stratify by each image's full defect-label combination, rather than treating individual CSV rows as independent samples. Confirm the actual holdout count in holdout.csv.
-Q12. Starter segmentation baseline and threshold sweep
-Measured training and threshold-sweep results: NOT YET ADDED.
-Run the supplied starter notebook at native resolution for 5–10 epochs. Evaluate thresholds 0.3, 0.5, 0.7, and 0.9 without a minimum-area filter. Add measured results from runs/milestone_1_starter/threshold_sweep.csv, identify the best threshold under the required metric, and include the training history and threshold-sweep plot.
+- **Total rows:** 45,572
+- **Unique images:** 11,393
+- **Image resolution:** 128 × 800 pixels
+- **Pixels per image:** 102,400
+- **Defect classes:** `defect_a`, `defect_b`, `defect_c`, `defect_d`
+
+### 2. Dataset and Metric Analysis (Q1–Q10)
+
+#### Q1. Most Frequent Defect Class Count + Clean Images
+
+| Defect Class | Positive Masks |
+|---|---:|
+| defect_a | 1,081 |
+| defect_b | 313 |
+| defect_c | 4,100 |
+| defect_d | 1,707 |
+| Completely clean images | 5,516 |
+
+**Answer:** 4,100 + 5,516 = **9,616**
+
+#### Q2. Images Containing Multiple Defect Classes
+
+**Answer: 1,198 images**
+
+Images containing more than one defect class are counted by grouping the dataset by `image_id` and counting distinct classes with non-empty masks.
+
+#### Q3. Overlapping Defect Pixels
+
+**Answer: 0 pixels**
+
+Class-specific RLE masks are decoded onto the native 128 × 800 canvas. No pixels overlap between two or more defect-class masks.
+
+#### Q4. RLE Boundary Audit
+
+- **Malformed non-empty RLE rows:** 0
+- **Maximum pixel index:** 102,400
+- **Valid pixel index limit:** 102,400
+
+All non-empty RLE runs remain within the image canvas.
+
+#### Q5. Distortion Caused by Resizing to 256 × 256
+
+| Measurement | Calculation | Result |
+|---|---|---:|
+| Width scale factor | 256 / 800 | 0.32 |
+| Height scale factor | 256 / 128 | 2.00 |
+| Distortion ratio | 2.00 / 0.32 | 6.25 |
+
+Direct square resizing compresses the horizontal dimension and stretches the vertical dimension, potentially distorting defect shapes.
+
+#### Q6. Cohen's d: Defect Versus Local Background
+
+| Defect Class | Cohen's d | Absolute Cohen's d |
+|---|---:|---:|
+| defect_a | 0.169046 | 0.169046 |
+| defect_b | 0.549754 | 0.549754 |
+| defect_c | 0.188645 | 0.188645 |
+| defect_d | -0.020579 | 0.020579 |
+
+**Answer:** `defect_d` has the smallest absolute effect size, **0.020579**.
+
+Its local intensity contrast is weak. Texture- or frequency-based features may help distinguish this class.
+
+#### Q7. Dice Score for Empty Ground Truth
+
+| Ground Truth | Prediction | Dice Score |
+|---|---|---:|
+| Empty | Empty | 1.0 |
+| Empty | Two false-positive pixels | 0.0 |
+
+#### Q8. Toy Composite Metric
+
+Given 10 positive pairs (6 with Dice = 0.80 and 4 with Dice = 0.40) and 40 empty pairs (36 predicted empty and 4 with 1,024 false-positive pixels each):
+
+- **Foreground Dice:** 0.6400
+- **False-positive score:** 0.9990
+- **Empty accuracy:** 0.9000
+
+Using the weights of 70% foreground Dice, 20% false-positive score, and 10% empty accuracy:
+
+**Final score:**
+
+`0.70 × 0.6400 + 0.20 × 0.9990 + 0.10 × 0.9000 = 0.7378`
+
+#### Q9. Empty-Mask Prevalence and All-Empty Predictor
+
+- **Total image-class pairs:** 45,572
+- **Empty pairs:** 38,371
+- **Emptiness rate:** 0.841986
+- **Naive mean Dice of an all-empty predictor:** 0.841986
+- **Official composite score of an all-empty predictor:** 0.3000
+
+The naive mean Dice is high because empty ground-truth masks receive a score of 1 when the prediction is also empty. The official metric balances foreground Dice, false positives, and empty-mask accuracy.
+
+#### Q10. Connected-Component Analysis
+
+Connected components are identified using 8-connectivity, where diagonal neighbours are considered connected.
+
+| Defect Class | Smallest Component (pixels) | Pixels Lost Below 50 px | Loss (%) | Pixels Lost Below 200 px | Loss (%) |
+|---|---:|---:|---:|---:|---:|
+| defect_a | 3 | 276 | 0.0341% | 123,165 | 15.2171% |
+| defect_b | 93 | 0 | 0.0000% | 2,887 | 1.3384% |
+| defect_c | 1 | 8,234 | 0.0361% | 76,537 | 0.3359% |
+| defect_d | 1 | 1,507 | 0.0123% | 9,892 | 0.0810% |
+
+For `defect_b`, the smallest component contains **93 pixels**. Filtering components smaller than 50 pixels removes no ground-truth pixels from this class, while a 200-pixel threshold removes 1.3384%.
+
+### 3. Image-Level Stratification (Q11)
+
+- **Total unique images:** 11,393
+- **Unique defect combinations:** 15
+- **Images containing defect_b:** 313
+- **20% holdout target:** 63 images
+
+The image-level combinations are:
+
+| Defect Combination | Number of Images |
+|---|---:|
+| clean | 5,516 |
+| defect_a | 601 |
+| defect_a + defect_b | 23 |
+| defect_a + defect_b + defect_c | 8 |
+| defect_a + defect_b + defect_d | 11 |
+| defect_a + defect_c | 215 |
+| defect_a + defect_c + defect_d | 87 |
+| defect_a + defect_d | 136 |
+| defect_b | 151 |
+| defect_b + defect_c | 67 |
+| defect_b + defect_c + defect_d | 20 |
+| defect_b + defect_d | 33 |
+| defect_c | 3,105 |
+| defect_c + defect_d | 598 |
+| defect_d | 822 |
+
+Stratification by complete defect combinations helps preserve the distribution of defect patterns between training and holdout sets.
+
+### 4. Starter Segmentation Baseline (Q12)
+
+The baseline evaluation uses the native image resolution of 128 × 800 pixels. The model is intended to be trained for 5–10 epochs and evaluated at probability thresholds of 0.3, 0.5, 0.7, and 0.9, without a minimum-area filter.
+
+The threshold sweep compares segmentation performance at different confidence levels. Lower thresholds generally produce more positive predictions, while higher thresholds produce fewer positive predictions.
+
+The training metrics and measured threshold-sweep scores are not included in the available notebook outputs.
