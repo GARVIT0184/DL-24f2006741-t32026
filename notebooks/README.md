@@ -1,12 +1,32 @@
 # Project Notebooks
 
-This folder contains the notebooks developed for the Industrial Surface Anomaly Segmentation project.
+Notebooks for the Industrial Surface Anomaly Segmentation project.
 
 ## Milestone 1
-- `milestone-1.ipynb` — Initial data analysis, baseline segmentation experiments, and threshold evaluation.
+`milestone-1.ipynb`
+
+Initial data analysis and baseline experiments.
 
 ## Milestone 2
-- `milestone-2-genai.ipynb` — RLE decoding, defect distribution, co-occurrence analysis, spatial overlap, PyTorch dataset pipeline, and baseline U-Net training.
+`milestone-2-genai.ipynb`
 
-## Development Workflow
-Each milestone is maintained in a separate Git branch. Completed milestone branches are reviewed and merged into `main` through pull requests.
+Data processing and baseline U-Net training.
+
+## Milestone 3
+`milestone-3-genai (1).ipynb`
+
+Transfer learning experiments.
+
+## Milestone 4
+`milestone-4-genai.ipynb`
+
+Controlled experiments and ablation study.
+
+## Milestone 5
+`milestone-5-genai.ipynb`
+
+Thresholding, post-processing, TTA and ensemble inference.
+
+## Workflow
+
+Each milestone is maintained in a separate branch and merged into `main` through pull requests.
