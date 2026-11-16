@@ -9,15 +9,6 @@ Image segmentation project for detecting four industrial defect classes: `defect
 
 Dataset images have a resolution of **128 × 800 pixels** with masks stored in RLE format.
 
-## Repository Structure
-
-```text
-DL-24f2006741-t32026/
-├── notebooks/
-├── reports/
-└── README.md
-```
-
 ## Milestones
 
 1. **Milestone 1:** Data analysis and baseline evaluation
